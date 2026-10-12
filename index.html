@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>咔嚓！心動快門｜婚禮任務上傳</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #fbf6f1;
+      --card: #ffffff;
+      --ink: #3d2c2e;
+      --muted: #9a8789;
+      --rose: #c9767f;
+      --rose-dark: #a85a64;
+      --rose-soft: #f7e6e4;
+      --line: #ecdcd6;
+      --gold: #c8a36a;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    [hidden] { display: none !important; } /* 避免 display:flex 蓋掉 hidden */
+    html, body { margin: 0; }
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+      color: var(--ink);
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(circle at 10% 0%, #f6d9d9 0, transparent 42%),
+        radial-gradient(circle at 100% 35%, #f2e4cf 0, transparent 38%);
+      min-height: 100vh;
+      min-height: 100dvh;
+    }
+    .page {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 0 20px 140px;
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* 標題區 */
+    header { text-align: center; padding: 44px 0 28px; }
+    .eyebrow { font-size: 12px; letter-spacing: .32em; color: var(--gold); font-weight: 500; }
+    .rings { font-size: 28px; margin: 14px 0 4px; }
+    h1 {
+      font-family: 'Noto Serif TC', serif;
+      font-size: 32px;
+      line-height: 1.3;
+      letter-spacing: .06em;
+      margin: 0 0 10px;
+    }
+    .sub { color: var(--muted); font-size: 15px; line-height: 1.7; margin: 0; }
+
+    /* 表單卡片 */
+    .card {
+      background: var(--card);
+      border-radius: 24px;
+      padding: 22px 18px;
+      box-shadow: 0 10px 30px rgba(168, 90, 100, .08);
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+    .label-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+    .label { font-size: 15px; font-weight: 700; }
+    .hint { font-size: 13px; color: var(--muted); }
+    input[type=text] {
+      width: 100%;
+      font-size: 16px;
+      font-family: inherit;
+      padding: 14px 16px;
+      border: 1.5px solid var(--line);
+      border-radius: 14px;
+      background: #fffdfb;
+      color: var(--ink);
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    input[type=text]:focus { border-color: var(--rose); box-shadow: 0 0 0 4px var(--rose-soft); }
+
+    /* 選檔區：還沒選檔時是一大塊，選了之後變成縮圖格 */
+    .empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-height: 220px;
+      border: 2px dashed #e3c3c1;
+      border-radius: 20px;
+      background: #fffafa;
+      color: var(--rose-dark);
+      cursor: pointer;
+      text-align: center;
+      padding: 20px;
+    }
+    .empty .icon {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      background: var(--rose-soft);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .empty strong { font-size: 17px; }
+    .empty small { color: var(--muted); font-size: 13px; }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .thumb {
+      position: relative;
+      aspect-ratio: 1 / 1;
+      border-radius: 14px;
+      overflow: hidden;
+      background: var(--rose-soft);
+    }
+    .thumb img, .thumb video { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .thumb .noprev {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; color: var(--rose-dark); padding: 8px; text-align: center; word-break: break-all;
+    }
+    .thumb .rm {
+      position: absolute; top: 6px; right: 6px;
+      width: 28px; height: 28px;
+      border: 0; border-radius: 50%;
+      background: rgba(40, 20, 22, .6);
+      color: #fff; font-size: 16px; line-height: 28px; padding: 0;
+    }
+    .thumb .badge {
+      position: absolute; left: 6px; bottom: 6px;
+      font-size: 11px; padding: 3px 8px; border-radius: 999px;
+      background: rgba(40, 20, 22, .6); color: #fff;
+    }
+    .add {
+      aspect-ratio: 1 / 1;
+      border: 2px dashed #e3c3c1;
+      border-radius: 14px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+      color: var(--rose-dark); font-size: 13px; cursor: pointer; background: #fffafa;
+    }
+    .add span { font-size: 28px; line-height: 1; }
+    .file-input { display: none; }
+
+    /* 底部固定按鈕 */
+    .bar {
+      position: fixed; left: 0; right: 0; bottom: 0;
+      padding: 16px 20px calc(16px + env(safe-area-inset-bottom));
+      background: linear-gradient(to top, var(--bg) 65%, rgba(251, 246, 241, 0));
+    }
+    .btn {
+      display: block; width: 100%; max-width: 440px; margin: 0 auto;
+      font-size: 17px; font-weight: 700; font-family: inherit; letter-spacing: .08em;
+      padding: 17px; border: 0; border-radius: 999px;
+      background: linear-gradient(135deg, #d58a92, var(--rose-dark));
+      color: #fff;
+      box-shadow: 0 8px 20px rgba(168, 90, 100, .3);
+    }
+    .btn:disabled { background: #dccfcf; box-shadow: none; }
+    .btn.ghost { background: transparent; color: var(--rose-dark); box-shadow: none; border: 1.5px solid var(--line); }
+
+    /* 提示訊息 */
+    .toast {
+      position: fixed; left: 50%; top: 20px; transform: translate(-50%, -20px);
+      width: calc(100% - 40px); max-width: 440px;
+      background: #3d2c2e; color: #fff; font-size: 14px; line-height: 1.6;
+      padding: 12px 16px; border-radius: 14px; white-space: pre-line;
+      opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; z-index: 30;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    /* 全螢幕上傳中／完成畫面 */
+    .overlay {
+      position: fixed; inset: 0; z-index: 20;
+      background: rgba(251, 246, 241, .96);
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px; text-align: center;
+    }
+    .overlay[hidden] { display: none; }
+    .overlay h2 { font-family: 'Noto Serif TC', serif; font-size: 26px; margin: 26px 0 8px; }
+    .overlay p { margin: 6px 0; color: var(--muted); font-size: 15px; line-height: 1.7; }
+    .overlay .warn { color: var(--rose-dark); font-weight: 500; margin-top: 18px; }
+    .ov-box { width: 100%; max-width: 360px; }
+    .ring { position: relative; width: 160px; height: 160px; margin: 0 auto; }
+    .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .ring circle { fill: none; stroke-width: 8; }
+    .ring .track { stroke: var(--rose-soft); }
+    .ring .arc { stroke: var(--rose); stroke-linecap: round; stroke-dasharray: 326.7; stroke-dashoffset: 326.7; transition: stroke-dashoffset .4s ease; }
+    .ring .center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .ring .heart { font-size: 26px; animation: beat 1.1s ease-in-out infinite; }
+    .ring .pct { font-size: 28px; font-weight: 700; color: var(--rose-dark); margin-top: 2px; }
+    @keyframes beat { 0%, 100% { transform: scale(1); } 30% { transform: scale(1.22); } 50% { transform: scale(.95); } }
+    .check {
+      width: 120px; height: 120px; margin: 0 auto; border-radius: 50%;
+      background: linear-gradient(135deg, #d58a92, var(--rose-dark));
+      display: flex; align-items: center; justify-content: center;
+      animation: pop .5s cubic-bezier(.2, 1.4, .4, 1) both;
+      box-shadow: 0 12px 30px rgba(168, 90, 100, .3);
+    }
+    .check.fail { background: linear-gradient(135deg, #e0b07a, #b9834a); }
+    .check svg { width: 56px; height: 56px; stroke: #fff; stroke-width: 4; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    @keyframes pop { from { transform: scale(.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .fail-list { list-style: none; padding: 0; margin: 14px 0 0; font-size: 14px; color: var(--ink); word-break: break-all; }
+    .fail-list li { padding: 6px 0; border-bottom: 1px solid var(--line); }
+    .ov-actions { display: flex; flex-direction: column; gap: 12px; margin-top: 28px; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .ring .heart, .check { animation: none; }
+      .ring .arc, .toast { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div class="eyebrow">WEDDING MISSION</div>
+      <div class="rings">💍</div>
+      <h1>咔嚓！心動快門</h1>
+      <p class="sub">完成任務了嗎？<br>把你拍下的照片與影片傳給我們吧</p>
+    </header>
+
+    <div class="card">
+      <div>
+        <div class="label-row">
+          <span class="label">你的名字</span>
+          <span class="hint">讓新人知道是誰拍的</span>
+        </div>
+        <input id="guest" type="text" placeholder="例如：小明" maxlength="30" autocomplete="name">
+      </div>
+
+      <div>
+        <div class="label-row">
+          <span class="label">任務照片／影片</span>
+          <span class="hint" id="count">0 / 5</span>
+        </div>
+        <label class="empty" id="empty" for="files">
+          <span class="icon">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
+          </span>
+          <strong>點這裡選擇照片或影片</strong>
+          <small>可以一次選多個，最多 5 個，影片 2 分鐘內</small>
+        </label>
+        <div class="grid" id="grid" hidden></div>
+        <input class="file-input" id="files" type="file" accept="image/*,video/*" multiple>
+      </div>
+    </div>
+  </div>
+
+  <div class="bar">
+    <button class="btn" id="submit" disabled>送出上傳</button>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="overlay" id="overlay" hidden>
+    <div class="ov-box" id="ovBusy">
+      <div class="ring">
+        <svg viewBox="0 0 120 120"><circle class="track" cx="60" cy="60" r="52"/><circle class="arc" id="arc" cx="60" cy="60" r="52"/></svg>
+        <div class="center"><span class="heart">💗</span><span class="pct" id="pct">0%</span></div>
+      </div>
+      <h2>上傳中…</h2>
+      <p id="ovStep">準備中</p>
+      <p class="warn">請不要關閉畫面或鎖定螢幕</p>
+    </div>
+    <div class="ov-box" id="ovDone" hidden>
+      <div class="check" id="doneIcon">
+        <svg viewBox="0 0 24 24" id="doneSvg"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+      </div>
+      <h2 id="doneTitle">上傳成功！</h2>
+      <p id="doneMsg"></p>
+      <ul class="fail-list" id="failList"></ul>
+      <div class="ov-actions">
+        <button class="btn" id="retryBtn" hidden>重新上傳失敗的檔案</button>
+        <button class="btn" id="againBtn">再上傳其他任務</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const API_URL = 'https://script.google.com/macros/s/AKfycbyse-n9hHvh_U0Y3kHtsgHD9N5oRo_Z2jAEZlIxLzNac4lmBg8h4aTOQA65xmWeSoHgsA/exec';
+  const MAX_FILES = 5;
+  const MAX_VIDEO_SEC = 120;
+  const CHUNK = 8 * 1024 * 1024; // 每塊 8MB，必須是 256KB 的倍數
+  const RING = 326.7; // 圓環周長 2πr，r = 52
+
+  let items = []; // { file, url, isVideo, duration }
+  let busy = false;
+  let toastTimer = null;
+
+  const $ = id => document.getElementById(id);
+
+  // 用 text/plain 送出，瀏覽器不會先發跨網域預檢；也不帶 Google 登入資訊
+  async function call(action, payload) {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(Object.assign({ action }, payload)),
+    });
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error);
+    return json.data;
+  }
+
+  // 失敗時等一下再試，手機網路不穩時比較不會整個檔案失敗
+  async function retry(fn, times = 3) {
+    for (let n = 1; ; n++) {
+      try { return await fn(); }
+      catch (e) {
+        if (n >= times) throw e;
+        await new Promise(r => setTimeout(r, 1500 * n));
+      }
+    }
+  }
+
+  function toBase64(blob) {
+    return new Promise((ok, ng) => {
+      const r = new FileReader();
+      r.onload = () => ok(r.result.split(',')[1]);
+      r.onerror = () => ng(r.error);
+      r.readAsDataURL(blob);
+    });
+  }
+
+  // 有些手機選出來的檔案沒有 type，改看副檔名
+  function kindOf(file) {
+    if (file.type.startsWith('image/') || /\.(heic|heif|jpe?g|png|gif|webp)$/i.test(file.name)) return 'image';
+    if (file.type.startsWith('video/') || /\.(mov|mp4|m4v|3gp|webm)$/i.test(file.name)) return 'video';
+    return null;
+  }
+
+  // 讀影片長度；讀不到時回傳 null，不擋賓客上傳
+  function getDuration(url) {
+    return new Promise(resolve => {
+      const v = document.createElement('video');
+      let settled = false;
+      const done = d => {
+        if (settled) return;
+        settled = true;
+        v.removeAttribute('src');
+        v.load();
+        resolve(d);
+      };
+      v.preload = 'metadata';
+      v.muted = true;
+      v.onloadedmetadata = () => done(isFinite(v.duration) ? v.duration : null);
+      v.onerror = () => done(null);
+      setTimeout(() => done(null), 8000);
+      v.src = url;
+    });
+  }
+
+  function fmt(sec) {
+    const s = Math.round(sec);
+    return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+  }
+
+  function toast(msg) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 4000);
+  }
+
+  async function onPick(e) {
+    const picked = [...e.target.files];
+    e.target.value = ''; // 讓同一個檔案刪掉後可以再選
+    const msgs = [];
+    for (const file of picked) {
+      if (items.length >= MAX_FILES) {
+        msgs.push('一次最多 ' + MAX_FILES + ' 個檔案，多選的沒有加入');
+        break;
+      }
+      const kind = kindOf(file);
+      if (!kind) {
+        msgs.push(file.name + ' 不是照片或影片');
+        continue;
+      }
+      const url = URL.createObjectURL(file);
+      let duration = null;
+      if (kind === 'video') {
+        duration = await getDuration(url);
+        // 多留 1 秒容錯，手機錄滿 2 分鐘常會是 120.0x 秒
+        if (duration && duration > MAX_VIDEO_SEC + 1) {
+          URL.revokeObjectURL(url);
+          msgs.push(file.name + ' 長度 ' + fmt(duration) + '，超過 2 分鐘，請剪短後再傳');
+          continue;
+        }
+      }
+      items.push({ file, url, isVideo: kind === 'video', duration });
+    }
+    render();
+    if (msgs.length) toast(msgs.join('\n'));
+  }
+
+  function removeItem(i) {
+    URL.revokeObjectURL(items[i].url);
+    items.splice(i, 1);
+    render();
+  }
+
+  function render() {
+    const grid = $('grid');
+    grid.innerHTML = '';
+    items.forEach((it, i) => {
+      const el = document.createElement('div');
+      el.className = 'thumb';
+
+      const media = document.createElement(it.isVideo ? 'video' : 'img');
+      if (it.isVideo) {
+        media.muted = true;
+        media.playsInline = true;
+        media.preload = 'metadata';
+        media.src = it.url + '#t=0.1';
+      } else {
+        media.alt = '';
+        media.src = it.url;
+      }
+      media.onerror = () => {
+        media.remove();
+        const fb = document.createElement('div');
+        fb.className = 'noprev';
+        fb.textContent = it.file.name;
+        el.prepend(fb);
+      };
+      el.appendChild(media);
+
+      if (it.isVideo) {
+        const badge = document.createElement('span');
+        badge.className = 'badge';
+        badge.textContent = '▶ ' + (it.duration ? fmt(it.duration) : '影片');
+        el.appendChild(badge);
+      }
+
+      const rm = document.createElement('button');
+      rm.className = 'rm';
+      rm.type = 'button';
+      rm.textContent = '×';
+      rm.setAttribute('aria-label', '移除 ' + it.file.name);
+      rm.onclick = () => removeItem(i);
+      el.appendChild(rm);
+
+      grid.appendChild(el);
+    });
+
+    if (items.length > 0 && items.length < MAX_FILES) {
+      const add = document.createElement('label');
+      add.className = 'add';
+      add.htmlFor = 'files';
+      add.innerHTML = '<span>＋</span>繼續新增';
+      grid.appendChild(add);
+    }
+
+    $('empty').hidden = items.length > 0;
+    grid.hidden = items.length === 0;
+    $('count').textContent = items.length + ' / ' + MAX_FILES;
+    $('submit').disabled = items.length === 0;
+  }
+
+  function setProgress(ratio) {
+    const r = Math.min(1, Math.max(0, ratio));
+    $('arc').style.strokeDashoffset = RING * (1 - r);
+    $('pct').textContent = Math.floor(r * 100) + '%';
+  }
+
+  function submit() {
+    const guest = $('guest').value.trim();
+    if (!guest) {
+      toast('請先填寫你的名字');
+      $('guest').focus();
+      return;
+    }
+    if (!items.length) return;
+    try { localStorage.setItem('guestName', guest); } catch (e) {}
+    upload(guest);
+  }
+
+  async function upload(guest) {
+    busy = true;
+    setProgress(0);
+    $('ovStep').textContent = '準備中';
+    $('ovBusy').hidden = false;
+    $('ovDone').hidden = true;
+    $('overlay').hidden = false;
+
+    const list = items.slice();
+    const total = list.reduce((sum, it) => sum + it.file.size, 0) || 1;
+    let doneBytes = 0;
+    const failed = [];
+
+    for (let i = 0; i < list.length; i++) {
+      const f = list[i].file;
+      $('ovStep').textContent = '正在上傳第 ' + (i + 1) + ' / ' + list.length + ' 個';
+      try {
+        const uploadUrl = await retry(() => call('start', { name: guest + '_' + f.name, mimeType: f.type, size: f.size }));
+        for (let s = 0; s < f.size; s += CHUNK) {
+          const part = f.slice(s, s + CHUNK);
+          const base64 = await toBase64(part);
+          await retry(() => call('chunk', { uploadUrl, base64, start: s, total: f.size }));
+          setProgress((doneBytes + s + part.size) / total);
+        }
+      } catch (e) {
+        failed.push(list[i]);
+      }
+      doneBytes += f.size;
+      setProgress(doneBytes / total);
+    }
+
+    // 成功的檔案從清單移除，只留下失敗的讓賓客重試
+    list.forEach(it => { if (!failed.includes(it)) URL.revokeObjectURL(it.url); });
+    items = failed;
+    busy = false;
+    showResult(list.length - failed.length, failed);
+  }
+
+  function showResult(okCount, failed) {
+    $('ovBusy').hidden = true;
+    $('ovDone').hidden = false;
+    const failList = $('failList');
+    failList.innerHTML = '';
+
+    if (!failed.length) {
+      $('doneIcon').classList.remove('fail');
+      $('doneSvg').innerHTML = '<path d="M5 12.5l4.5 4.5L19 7.5"/>';
+      $('doneTitle').textContent = '上傳成功！';
+      $('doneMsg').textContent = okCount + ' 個檔案已經送到新人手上，謝謝你的祝福 💕';
+      $('retryBtn').hidden = true;
+      $('againBtn').textContent = '再上傳其他任務';
+      $('againBtn').className = 'btn';
+    } else {
+      $('doneIcon').classList.add('fail');
+      $('doneSvg').innerHTML = '<path d="M12 7v6"/><path d="M12 17h.01"/>';
+      $('doneTitle').textContent = '有 ' + failed.length + ' 個檔案沒傳成功';
+      $('doneMsg').textContent = (okCount ? okCount + ' 個已經傳好了。' : '') + '請確認網路後再試一次';
+      failed.forEach(it => {
+        const li = document.createElement('li');
+        li.textContent = it.file.name;
+        failList.appendChild(li);
+      });
+      $('retryBtn').hidden = false;
+      $('againBtn').textContent = '先回到上傳頁';
+      $('againBtn').className = 'btn ghost';
+    }
+  }
+
+  $('files').addEventListener('change', onPick);
+  $('submit').addEventListener('click', submit);
+  $('retryBtn').addEventListener('click', () => upload($('guest').value.trim()));
+  $('againBtn').addEventListener('click', () => {
+    $('overlay').hidden = true;
+    render();
+  });
+  window.addEventListener('beforeunload', e => {
+    if (busy) { e.preventDefault(); e.returnValue = ''; }
+  });
+
+  try { $('guest').value = localStorage.getItem('guestName') || ''; } catch (e) {}
+</script>
+</body>
+</html>
