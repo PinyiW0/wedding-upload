@@ -230,14 +230,14 @@
       <div>
         <div class="label-row">
           <span class="label">任務照片／影片</span>
-          <span class="hint" id="count">0 / 5</span>
+          <span class="hint" id="count">0 / 50</span>
         </div>
         <label class="empty" id="empty" for="files">
           <span class="icon">
             <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
           </span>
           <strong>點這裡選擇照片或影片</strong>
-          <small>可以一次選多個，最多 5 個，影片 2 分鐘內</small>
+          <small>可以一次選多個，最多 50 個，影片 2 分鐘內</small>
         </label>
         <div class="grid" id="grid" hidden></div>
         <input class="file-input" id="files" type="file" accept="image/*,video/*" multiple>
@@ -277,7 +277,7 @@
 
 <script>
   const API_URL = 'https://script.google.com/macros/s/AKfycbyse-n9hHvh_U0Y3kHtsgHD9N5oRo_Z2jAEZlIxLzNac4lmBg8h4aTOQA65xmWeSoHgsA/exec';
-  const MAX_FILES = 5;
+  const MAX_FILES = 50;
   const MAX_VIDEO_SEC = 120;
   const CHUNK = 8 * 1024 * 1024; // 每塊 8MB，必須是 256KB 的倍數
   const RING = 326.7; // 圓環周長 2πr，r = 52
