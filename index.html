@@ -237,7 +237,7 @@
             <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
           </span>
           <strong>點這裡選擇照片或影片</strong>
-          <small>可以一次選多個，最多 50 個，影片 2 分鐘內</small>
+          <small>可以一次選多個，最多 50 個，影片 5 分鐘內</small>
         </label>
         <div class="grid" id="grid" hidden></div>
         <input class="file-input" id="files" type="file" accept="image/*,video/*" multiple>
@@ -278,7 +278,7 @@
 <script>
   const API_URL = 'https://script.google.com/macros/s/AKfycbyse-n9hHvh_U0Y3kHtsgHD9N5oRo_Z2jAEZlIxLzNac4lmBg8h4aTOQA65xmWeSoHgsA/exec';
   const MAX_FILES = 50;
-  const MAX_VIDEO_SEC = 120;
+  const MAX_VIDEO_SEC = 300;
   const CHUNK = 8 * 1024 * 1024; // 每塊 8MB，必須是 256KB 的倍數
   const RING = 326.7; // 圓環周長 2πr，r = 52
 
@@ -380,10 +380,10 @@
       let duration = null;
       if (kind === 'video') {
         duration = await getDuration(url);
-        // 多留 1 秒容錯，手機錄滿 2 分鐘常會是 120.0x 秒
+        // 多留 1 秒容錯，手機錄滿 5 分鐘常會是 300.0x 秒
         if (duration && duration > MAX_VIDEO_SEC + 1) {
           URL.revokeObjectURL(url);
-          msgs.push(file.name + ' 長度 ' + fmt(duration) + '，超過 2 分鐘，請剪短後再傳');
+          msgs.push(file.name + ' 長度 ' + fmt(duration) + '，超過 5 分鐘，請剪短後再傳');
           continue;
         }
       }
